@@ -119,7 +119,7 @@ public class DiskPreview {
                                dataStart = attributeLocator + 0x08;
                                dataStart = dataStart + 0x10;
 
-                               if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && dataRunAttributeCount == 1) {
+                               if (((mft[dataStart] & 0x000000FF) == 0x00  && dataRunAttributeCount == 1)) {
 
                                   FCBN = 0;
 
