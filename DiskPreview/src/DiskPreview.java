@@ -49,12 +49,12 @@ public class DiskPreview {
            int CN = mftStartCluster;
            int FCBN = 0;
            int OFF = 0;
-
-           //System.out.println("Format:\n\nNAME:\n          CN :: FBCN(+OFF) [:: NDS]\n\n");
+           int clusterCounter = 0;
 
 
            //Skips to beginning of MFT and reads 1024 bytes for analysis.
            dis.skipBytes(skipToMFT);
+           clusterCounter = mftStartCluster;
 
            while (dis.read(mft) != -1) {
 
@@ -68,7 +68,7 @@ public class DiskPreview {
 
                if (byteArray2Int(mft, 0, 3) == 1162627398) { //if this is a valid mft entry
 
-
+                   int dataRunAttributeCount = 0;
 
                    fileName = null;
 
@@ -76,7 +76,7 @@ public class DiskPreview {
                    //System.out.println(attributeLocator);
 
                    while(((mft[attributeLocator] & 0x000000FF) != 0xff)){ //run until you find the end of mft signature
-                       System.out.println(Integer.toHexString(mft[attributeLocator] & 0x000000FF));
+                       //System.out.println(Integer.toHexString(mft[attributeLocator] & 0x000000FF));
 
                        int attributeSize = byteArray2Int(mft, attributeLocator + 0x04, attributeLocator + 0x05);
 
@@ -108,62 +108,61 @@ public class DiskPreview {
                        //Looks for data stream.
                        if (byteArray2Int(mft, attributeLocator, attributeLocator) == 128) { //if you find a data stream
 
+
+                           dataRunAttributeCount++;
                            int dataStart;
 
                            //looks for resident file
-                           if((mft[attributeLocator + 0x08] == 0x00 )) {
+                           if((mft[attributeLocator + 0x08] == 0x00 && dataRunAttributeCount == 1)) {
 
 
                                dataStart = attributeLocator + 0x08;
                                dataStart = dataStart + 0x10;
 
-                               OFF = dataStart;
+                               if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && dataRunAttributeCount == 1) {
+
+                                  FCBN = 0;
+
+                               } else {
+                                    System.out.println(Integer.toHexString((mft[dataStart] & 0x000000FF)));
+                                    OFF = dataStart;
+                                    FCBN = CN;
+                                   }
 
                                //nonresident file found
                            }
-                           if(mft[attributeLocator + 0x08] == 0x01) {
+                           if((mft[attributeLocator + 0x08] == 0x01 && dataRunAttributeCount == 1)) {
+                               
                                dataStart = (attributeLocator + 0x40);
                                int dataStartHex = (mft[attributeLocator + 0x40]);
 
-                               //System.out.println(dataStart);
+                               if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && NDS == 1) {
+                                   FCBN = 0;
+                               }
                                String dataRun = Integer.toHexString(dataStartHex & 0x000000FF);
-                               if (dataRun.length() == 2) {
+                               if (dataRun.length() == 2 && dataRunAttributeCount == 1) {
                                    int firstComponent = (Character.getNumericValue(dataRun.charAt(0)));
                                    int secondComponent = (Character.getNumericValue(dataRun.charAt(1)));
-                                   FCBN  = byteArray2Int(mft, dataStart + secondComponent + 1, dataStart + secondComponent + firstComponent);
 
-
-                                //FCBN is wrong when a) there is an alternate data stream, or b) an offset is being shown.
-
-
-
-                                   //System.out.println(dataStart);
-
-                                   //System.out.println(mft[dataStart + secondComponent] + "+" + mft[dataStart + secondComponent + firstComponent]);
-                                   //System.out.println(firstComponent);
-                                   //System.out.println(secondComponent);
-                                   //System.out.println(dataStart);
-                                   //System.out.println(secondComponent);
-
+                                       FCBN = byteArray2Int(mft, dataStart + secondComponent + 1, dataStart + secondComponent + firstComponent);
                                }
 
                                OFF = 0;
                            }
 
                            NDS++; //increase the data stream counter
-                           //System.out.println(NDS);
 
                        }
-
-                       //System.out.println("Data Stream(s): " + NDS);
                        attributeLocator = attributeLocator + attributeSize;
                    }
 
                    if(NDS >= 1 && fileName != null) {
-                       System.out.println(fileName + ":\n          " + CN + " :: " + FCBN + "(+" + OFF + ") [:: " + (NDS - 1) + "]\n");
+                       System.out.println(fileName + ":\n          " + CN + " " + clusterCounter + " :: " + FCBN + "(+" + OFF + ") [:: " + (NDS - 1) + "]\n");
 
 
                    }
+
+                   clusterCounter += sectorsPerCluster;
 
                    CN = CN + 2;
 
