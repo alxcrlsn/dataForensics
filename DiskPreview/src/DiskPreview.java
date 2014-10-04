@@ -124,7 +124,7 @@ public class DiskPreview {
                                   FCBN = 0;
 
                                } else {
-                                    System.out.println(Integer.toHexString((mft[dataStart] & 0x000000FF)));
+                                    //System.out.println(Integer.toHexString((mft[dataStart] & 0x000000FF)));
                                     OFF = dataStart;
                                     FCBN = CN;
                                    }
@@ -136,7 +136,7 @@ public class DiskPreview {
                                dataStart = (attributeLocator + 0x40);
                                int dataStartHex = (mft[attributeLocator + 0x40]);
 
-                               if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && NDS == 1) {
+                               if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && dataRunAttributeCount == 1) {
                                    FCBN = 0;
                                }
                                String dataRun = Integer.toHexString(dataStartHex & 0x000000FF);
