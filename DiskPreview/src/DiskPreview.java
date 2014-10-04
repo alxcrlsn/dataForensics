@@ -1,9 +1,12 @@
+/**
+ * COMP 2555 -- Assignment 2
+ * Created by Alex Carlson on 10/3/2014
+ * Reads NTFS volume and prints file information.
+ * Program takes a file path as a command line argument.
+ */
+
 import java.io.*;
 
-/**
- * Created by alxcrlsn on 9/29/14.
- * Go through loop until read method returns -1. Read one record at a time (1024 bytes).
- */
 public class DiskPreview {
 
     //Function given to us via cs.du.edu/2555
@@ -16,11 +19,10 @@ public class DiskPreview {
         return value;
     }
 
-
     public static void main(String[] args) throws Exception {
 
-        InputStream is = null;
-        DataInputStream dis = null;
+        InputStream is;
+        DataInputStream dis;
 
         //Runs program if arguments are specified. If not, prints error message.
         if (args.length == 1) {
@@ -44,39 +46,33 @@ public class DiskPreview {
            int clusterSize = bytesPerSector * sectorsPerCluster;
            int skipToMFT = ((clusterSize * mftStartCluster) - 512);
 
-           String fileName = null;
+           //Variables for print statement.
+           String fileName;
            int NDS = 0;
            int CN = mftStartCluster;
            int FCBN = 0;
            int OFF = 0;
-           int clusterCounter = 0;
-
 
            //Skips to beginning of MFT and reads 1024 bytes for analysis.
            dis.skipBytes(skipToMFT);
-           clusterCounter = mftStartCluster;
 
            while (dis.read(mft) != -1) {
 
-
-               /*
-               Looks for MFT records using the 46 49 4C 45 hex identifier.
-               I convert the first 4 bytes of each 1024 byte block to an int
-               and compare it against the int value of 45 4C 49 46 (Little-endian)
+               /**
+               While loop looks for MFT records using the 46 49 4C 45 hex identifier.
+               It converts the first 4 bytes of each 1024 byte block to an int
+               and compares it against the int value of 45 4C 49 46 (Little-endian)
                to determine a valid entry. Non-valid record entries are discarded.
                */
 
-               if (byteArray2Int(mft, 0, 3) == 1162627398) { //if this is a valid mft entry
-
-                   int dataRunAttributeCount = 0;
+               if (byteArray2Int(mft, 0, 3) == 1162627398) {
 
                    fileName = null;
-
+                   int dataRunAttributeCount = 0;
                    int attributeLocator = byteArray2Int(mft, 0x14, 0x14);
-                   //System.out.println(attributeLocator);
 
-                   while(((mft[attributeLocator] & 0x000000FF) != 0xff)){ //run until you find the end of mft signature
-                       //System.out.println(Integer.toHexString(mft[attributeLocator] & 0x000000FF));
+                   //Looks for end of record.
+                   while(((mft[attributeLocator] & 0x000000FF) != 0xff)) {
 
                        int attributeSize = byteArray2Int(mft, attributeLocator + 0x04, attributeLocator + 0x05);
 
@@ -88,7 +84,6 @@ public class DiskPreview {
                                int fileNameStart = attributeLocator + 0x5a;
                                int fileNameEnd = attributeLocator + attributeSize;
 
-
                            //Converts the byte array to ASCII
                            for (int i = 0; i < attributeSize - 0x5a; i++) {
                                if (fileNameStart < fileNameEnd) {
@@ -97,45 +92,46 @@ public class DiskPreview {
                                }
                            }
 
+                           //Creates string with file name.
                            String innerFileName =((new String(fileNameToPrint, "UTF-8")));
 
                            //Passes the string outside of the if statement to be printed.
-                           fileName = innerFileName; //saves file name to variable accessible outside loop.
+                           fileName = innerFileName;
 
                        }
 
 
                        //Looks for data stream.
-                       if (byteArray2Int(mft, attributeLocator, attributeLocator) == 128) { //if you find a data stream
-
+                       if (byteArray2Int(mft, attributeLocator, attributeLocator) == 128) {
 
                            dataRunAttributeCount++;
                            int dataStart;
 
-                           //looks for resident file
+                           //Looks for resident files.
                            if((mft[attributeLocator + 0x08] == 0x00 && dataRunAttributeCount == 1)) {
-
 
                                dataStart = attributeLocator + 0x08;
                                dataStart = dataStart + 0x10;
 
+                               //Prevents program from breaking if resident data contains 00. (Like with $Repair).
                                if (((mft[dataStart] & 0x000000FF) == 0x00  && dataRunAttributeCount == 1)) {
 
                                   FCBN = 0;
 
                                } else {
-                                    //System.out.println(Integer.toHexString((mft[dataStart] & 0x000000FF)));
+
                                     OFF = dataStart;
                                     FCBN = CN;
                                    }
-
-                               //nonresident file found
                            }
+
+                           //Looks for non-resident files.
                            if((mft[attributeLocator + 0x08] == 0x01 && dataRunAttributeCount == 1)) {
                                
                                dataStart = (attributeLocator + 0x40);
                                int dataStartHex = (mft[attributeLocator + 0x40]);
 
+                               //Prevents program from breaking if data run value contains FF. (Like with $Volume).
                                if (((mft[dataStart] & 0x000000FF) == 0x00 ||(mft[dataStart] & 0x000000FF) == 255 )  && dataRunAttributeCount == 1) {
                                    FCBN = 0;
                                }
@@ -150,24 +146,24 @@ public class DiskPreview {
                                OFF = 0;
                            }
 
-                           NDS++; //increase the data stream counter
+                           //Increments data stream counter after each data stream.
+                           NDS++;
 
                        }
+                       //Increments the attribute locator to the next attribute.
                        attributeLocator = attributeLocator + attributeSize;
                    }
 
+                   //Prints the output
                    if(NDS >= 1 && fileName != null) {
-                       System.out.println(fileName + ":\n          " + CN + " " + clusterCounter + " :: " + FCBN + "(+" + OFF + ") [:: " + (NDS - 1) + "]\n");
-
-
+                       if ((NDS - 1) <= 0) {
+                           System.out.println(fileName + ":\n          " + CN + " :: " + FCBN + "(+" + OFF + ")\n");
+                       } else {
+                           System.out.println(fileName + ":\n          " + CN + " :: " + FCBN + "(+" + OFF + ") [:: " + (NDS - 1) + "]\n");
+                       }
                    }
 
-                   clusterCounter += sectorsPerCluster;
-
-                   CN = CN + 2;
-
-                   //break;
-
+                   CN += (mft.length/clusterSize);
                }
 
            }
@@ -178,13 +174,3 @@ public class DiskPreview {
         }
     }
 }
-
-//format print statement 10 spaces in. Ex:
-
-/*
-
-usb.txt:
-        326706 :: 326706(+280) :: 2
-
-
-*/
