@@ -1,7 +1,7 @@
 /**
- * COMP 2555 -- Assignment 2
- * Created by Alex Carlson on 10/3/2014
- * Reads NTFS volume and prints file information.
+ * COMP 2555 -- Assignment 3
+ * Created by Alex Carlson on 10/14/2014
+ * Linux memory dump and describes all running processes.
  * Program takes a file path as a command line argument.
  */
 
@@ -19,17 +19,45 @@ public class RamPreview {
         return value;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static byte[] readFromFile(RandomAccessFile someFile, long position, int size) throws Exception {
 
-        InputStream is;
-        DataInputStream dis;
+        someFile.seek(position);
+        byte[] theBytes = new byte[size];
+        someFile.read(theBytes);
+        return theBytes;
+    }
+
+
+    public static void main(String[] args) throws Exception {
 
         //Runs program if arguments are specified. If not, prints error message.
         if (args.length == 1) {
 
-            is = new FileInputStream(args[0]);
-            dis = new DataInputStream(is);
-            System.out.println(args[0]);
+            File forAnalysis = new File(args[0]);
+            RandomAccessFile theFile = new RandomAccessFile(forAnalysis, "r");
+
+            int descriptorSize;
+
+            theFile.skipBytes(0xC0660BC0 - 0xC0000000);
+            System.out.println(theFile.getFilePointer());
+            theFile.seek(0x7C);
+
+            byte[] theBytes = readFromFile(theFile, theFile.getFilePointer(), 4);
+
+            for (int i = 0; i < 4; i++) {
+                System.out.println(theBytes[i]);
+            }
+
+            System.out.println(byteArray2Int(theBytes, 0, 3));
+
+
+
+
+
+
+            //System.out.println(args[0]);
+            //System.out.println(theFile);
+
         } else {
             System.out.println("File not found. Please specify the file to analyze as a command line argument.");
         }
