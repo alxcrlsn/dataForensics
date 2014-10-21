@@ -100,8 +100,10 @@ public class RamPreview {
 
                 //Looks up Parent Process ID
                 parentStart = byteArray2Long(processDescriptor, 0xB0, 0xB0 + 3);
-                theFile.seek(((parentStart) - 0xC0000000) + 0xA8);
+                //System.out.println(Long.toHexString(parentStart));
+                theFile.seek((parentStart - 0xC0000000L) + 0xA8L);
                 theFile.read(parentProcessID);
+                //printByteArray(parentProcessID, parentProcessID.length);
                 ppid = (byteArray2Long(parentProcessID, 0, 3));
 
                 //Finds next process
@@ -112,6 +114,7 @@ public class RamPreview {
                 toString(pid, ppid, uid, taskToPrint, comm);
 
                 //Increments pointer to next process descriptor
+                //Make pointer location a long and use the L's at the end of each number.
                 pointerLocation = (int) (byteArray2Long(nextProcess, 0, 3) - 0xC0000000 - 0x7C);
 
                 //Ends the loop if the current pointer matches the start pointer
