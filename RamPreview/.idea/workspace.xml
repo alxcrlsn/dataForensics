@@ -26,11 +26,10 @@
       <file leaf-file-name="RamPreview.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/RamPreview.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.0760136" vertical-offset="713" max-vertical-offset="1695">
-              <caret line="113" column="42" selection-start-line="113" selection-start-column="42" selection-end-line="113" selection-end-column="42" />
+            <state vertical-scroll-proportion="0.25795054" vertical-offset="1129" max-vertical-offset="1695">
+              <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
               <folding>
                 <element signature="method#byteArray2Long#0;class#RamPreview#0" expanded="false" />
-                <element signature="method#toString#0;class#RamPreview#0" expanded="false" />
                 <element signature="method#printByteArray#0;class#RamPreview#0" expanded="false" />
                 <element signature="method#printByteInArray#0;class#RamPreview#0" expanded="false" />
               </folding>
@@ -358,11 +357,10 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/src/RamPreview.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0760136" vertical-offset="713" max-vertical-offset="1695">
-          <caret line="113" column="42" selection-start-line="113" selection-start-column="42" selection-end-line="113" selection-end-column="42" />
+        <state vertical-scroll-proportion="0.25795054" vertical-offset="1129" max-vertical-offset="1695">
+          <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
           <folding>
             <element signature="method#byteArray2Long#0;class#RamPreview#0" expanded="false" />
-            <element signature="method#toString#0;class#RamPreview#0" expanded="false" />
             <element signature="method#printByteArray#0;class#RamPreview#0" expanded="false" />
             <element signature="method#printByteInArray#0;class#RamPreview#0" expanded="false" />
           </folding>

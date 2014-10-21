@@ -1,13 +1,11 @@
 /**
  * COMP 2555 -- Assignment 3
  * Created by Alex Carlson on 10/14/2014
- * Linux memory dump and describes all running processes.
+ * Reads Linux memory dump and describes all running processes.
  * Program takes a file path as a command line argument.
  */
 
-
 import java.io.*;
-
 
 public class RamPreview {
 
@@ -41,7 +39,6 @@ public class RamPreview {
         System.out.println(Integer.toHexString(bytes[theByte] & 0x000000FF));
     }
 
-
     //Main method runs the program6
     public static void main(String[] args) throws Exception {
 
@@ -61,7 +58,6 @@ public class RamPreview {
         byte[] bytesToName = new byte[16];
         byte[] processDescriptor = new byte[1024];
 
-
         //Runs program if arguments are specified. If not, prints error message.
         if (args.length == 1) {
 
@@ -71,22 +67,21 @@ public class RamPreview {
             //Prints column headers
             System.out.println("PID" + "\t" + "PPID" + "\t" + "UID" + "\t" + "TASK" + "\t" + "\t" + "\t" + "\t" + "COMM");
 
-
             while(run) {
 
                 //Reads process descriptor into a 1024 byte array
                 theFile.seek(pointerLocation);
                 theFile.read(processDescriptor);
 
-                // Sets TASK
-                task = pointerLocation + 0xC0000000;
-                taskToPrint = Integer.toHexString(task);
-
                 //Sets PID
                 pid = (byteArray2Long(processDescriptor, 0xA8, 0xA8 + 0x03));
 
                 //Sets UID
                 uid = (byteArray2Long(processDescriptor, 0x14C, 0x14C + 0x03));
+
+                // Sets TASK
+                task = pointerLocation + 0xC0000000;
+                taskToPrint = Integer.toHexString(task);
 
                 //Sets COMM
                 theFile.seek(pointerLocation + 0x194);
@@ -104,8 +99,8 @@ public class RamPreview {
                 comm = (new String(processName, "UTF-8"));
 
                 //Looks up Parent Process ID
-                parentStart = byteArray2Long(processDescriptor, 0xB0, 0xB0 + 0x04);
-                theFile.seek((parentStart - 0xC0000000) + 0xA8);
+                parentStart = byteArray2Long(processDescriptor, 0xB0, 0xB0 + 3);
+                theFile.seek(((parentStart) - 0xC0000000) + 0xA8);
                 theFile.read(parentProcessID);
                 ppid = (byteArray2Long(parentProcessID, 0, 3));
 
@@ -113,8 +108,10 @@ public class RamPreview {
                 theFile.seek(pointerLocation + 0x7C);
                 theFile.read(nextProcess);
 
+                //Prints each entry as a String
                 toString(pid, ppid, uid, taskToPrint, comm);
 
+                //Increments pointer to next process descriptor
                 pointerLocation = (int) (byteArray2Long(nextProcess, 0, 3) - 0xC0000000 - 0x7C);
 
                 //Ends the loop if the current pointer matches the start pointer
