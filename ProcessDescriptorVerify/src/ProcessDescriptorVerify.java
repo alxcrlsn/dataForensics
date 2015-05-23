@@ -7,7 +7,7 @@
 
 import java.io.*;
 
-public class RamPreview {
+public class ProcessDescriptorVerify {
 
     //Function given to us via cs.du.edu/2555
     public static long byteArray2Long(byte b[], int start, int end) {
@@ -51,10 +51,12 @@ public class RamPreview {
         int task;
         int startPointer = (0xC0660BC0 - 0xC0000000);
         int pointerLocation = (startPointer);
+        int pdPointer;
         String comm;
         String taskToPrint;
         byte[] parentProcessID = new byte[4];
         byte[] nextProcess = new byte[4];
+        byte[] prevProcess = new byte[4];
         byte[] bytesToName = new byte[16];
         byte[] processDescriptor = new byte[1024];
 
@@ -71,6 +73,7 @@ public class RamPreview {
             while(run) {
 
                 //Reads process descriptor into a 1024 byte array
+                pdPointer = pointerLocation;
                 theFile.seek(pointerLocation);
                 theFile.read(processDescriptor);
 
@@ -111,12 +114,19 @@ public class RamPreview {
                 theFile.seek(pointerLocation + 0x7C);
                 theFile.read(nextProcess);
 
+                //Finds previous process
+                theFile.seek(pointerLocation + 0x80);
+                theFile.read(prevProcess);
+
                 //Prints each entry as a String
                 toString(pid, ppid, uid, taskToPrint, comm);
 
                 //Increments pointer to next process descriptor
                 //Make pointer location a long and use the L's at the end of each number.
-                pointerLocation = (int) (byteArray2Long(nextProcess, 0, 3) - 0xC0000000 - 0x7C);
+                    if(pdPointer == (int) (byteArray2Long(prevProcess, 0, 3) - 0xC0000000 - 0x7C)) {
+                        pointerLocation = (int) (byteArray2Long(nextProcess, 0, 3) - 0xC0000000 - 0x7C);
+                    }
+
 
                 //Ends the loop if the current pointer matches the start pointer
                 if (pointerLocation == startPointer) {
