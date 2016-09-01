@@ -1,6 +1,4 @@
 CSProjects
 ==========
 
-Computer science projects for class.
-
-Testing…
+Programming projects for data forensics class.
